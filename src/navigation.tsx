@@ -1,52 +1,134 @@
 import React from "react";
+import { Pressable, Text, View } from "react-native";
+import { Entypo, FontAwesome5 } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Image, View } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import UserIcon from "./components/svgs/user";
-import AppImages from "./images";
+import {
+  createBottomTabNavigator,
+  BottomTabBarProps,
+} from "@react-navigation/bottom-tabs";
 import { useStore } from "./store";
 import { useTheme } from "./theme";
 import { RootStackParamList, TabParamList } from "./types";
-import Onboarding from "./screens/Onboarding";
+import Intro from "./screens/Intro";
 import Auth from "./screens/Auth";
-import Setup from "./screens/Setup";
+import Forgot from "./screens/Forgot";
 import Home from "./screens/Home";
-import Progress from "./screens/Progress";
+import Ncomms from "./screens/Ncomms";
+import NcommsDetail from "./screens/NcommsDetail";
+import Wallet from "./screens/Wallet";
+import History from "./screens/History";
 import Profile from "./screens/Profile";
-import Plan from "./screens/Plan";
-import Session from "./screens/Session";
-import Finish from "./screens/Finish";
+import Airtime from "./screens/Airtime";
+import Data from "./screens/Data";
+import Train from "./screens/Train";
+import Bills from "./screens/Bills";
+import Receipt from "./screens/Receipt";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
 
-function Tabs() {
+const TABS: Record<
+  keyof TabParamList,
+  { label: string; icon: (color: string) => React.ReactNode }
+> = {
+  Home: {
+    label: "Home",
+    icon: (col) => <Entypo name="home" size={22} color={col} />,
+  },
+  Ncomms: {
+    label: "NComms",
+    icon: (col) => <FontAwesome5 name="satellite-dish" size={19} color={col} />,
+  },
+  Wallet: {
+    label: "Wallet",
+    icon: (col) => <Entypo name="wallet" size={22} color={col} />,
+  },
+  History: {
+    label: "History",
+    icon: (col) => (
+      <FontAwesome5 name="money-bill-wave" size={19} color={col} />
+    ),
+  },
+  Profile: {
+    label: "Profile",
+    icon: (col) => <FontAwesome5 name="user-alt" size={19} color={col} />,
+  },
+};
+
+// The active tab opens into a labelled pill, as in your original design.
+function TabBar({ state, navigation }: BottomTabBarProps) {
   const { c } = useTheme();
+  const i = useSafeAreaInsets();
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        backgroundColor: c.surface,
+        borderTopWidth: 1,
+        borderTopColor: c.line,
+        paddingTop: 8,
+        paddingBottom: i.bottom + 8,
+        paddingHorizontal: 8,
+      }}
+    >
+      {state.routes.map((route, idx) => {
+        const focused = state.index === idx;
+        const meta = TABS[route.name as keyof TabParamList];
+        return (
+          <Pressable
+            key={route.key}
+            style={{
+              flex: focused ? 2.4 : 1,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            onPress={() => {
+              const e = navigation.emit({
+                type: "tabPress",
+                target: route.key,
+                canPreventDefault: true,
+              });
+              if (!focused && !e.defaultPrevented)
+                navigation.navigate(route.name as never);
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                height: 44,
+                paddingHorizontal: focused ? 16 : 0,
+                borderRadius: focused ? 22 : 0,
+                backgroundColor: focused ? c.raised : "transparent",
+              }}
+            >
+              {meta.icon(focused ? c.primary : c.sub)}
+              {focused ? (
+                <Text
+                  style={{ color: c.primary, fontWeight: "700", marginLeft: 8 }}
+                >
+                  {meta.label}
+                </Text>
+              ) : null}
+            </View>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+function Tabs() {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarShowLabel: false,
-        tabBarStyle: { backgroundColor: c.surface, borderTopColor: c.line },
-        tabBarIcon: ({ focused }) =>
-          route.name === "Home" ? (
-            <Image source={focused ? AppImages.active : AppImages.vector}
-              style={focused ? { width: 28, height: 36 } : { width: 23, height: 23 }} resizeMode="contain" />
-          ) : route.name === "Progress" ? (
-            <View style={{ marginTop: -26 }}>
-              <LinearGradient colors={[c.primary2, c.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-                style={{ width: 58, height: 58, borderRadius: 29, alignItems: "center", justifyContent: "center" }}>
-                <Image source={AppImages.calendar} style={{ width: 26, height: 26 }} resizeMode="contain" />
-              </LinearGradient>
-            </View>
-          ) : (
-            <UserIcon width={22} height={22} color={focused ? c.primary : c.sub} />
-          ),
-      })}
+      screenOptions={{ headerShown: false }}
+      tabBar={(p) => <TabBar {...p} />}
     >
       <Tab.Screen name="Home" component={Home} />
-      <Tab.Screen name="Progress" component={Progress} />
+      <Tab.Screen name="Ncomms" component={Ncomms} />
+      <Tab.Screen name="Wallet" component={Wallet} />
+      <Tab.Screen name="History" component={History} />
       <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>
   );
@@ -58,19 +140,28 @@ export default function RootNavigator() {
   if (!ready) return null;
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.bg } }}>
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: c.bg },
+      }}
+    >
       {!onboarded ? (
-        <Stack.Screen name="Onboarding" component={Onboarding} />
+        <Stack.Screen name="Intro" component={Intro} />
       ) : !user ? (
-        <Stack.Screen name="Auth" component={Auth} />
-      ) : !user.goal ? (
-        <Stack.Screen name="Setup" component={Setup} />
+        <>
+          <Stack.Screen name="Auth" component={Auth} />
+          <Stack.Screen name="Forgot" component={Forgot} />
+        </>
       ) : (
         <>
           <Stack.Screen name="Tabs" component={Tabs} />
-          <Stack.Screen name="Plan" component={Plan} />
-          <Stack.Screen name="Session" component={Session} options={{ gestureEnabled: false }} />
-          <Stack.Screen name="Finish" component={Finish} options={{ gestureEnabled: false }} />
+          <Stack.Screen name="Airtime" component={Airtime} />
+          <Stack.Screen name="Data" component={Data} />
+          <Stack.Screen name="Train" component={Train} />
+          <Stack.Screen name="Bills" component={Bills} />
+          <Stack.Screen name="NcommsDetail" component={NcommsDetail} />
+          <Stack.Screen name="Receipt" component={Receipt} />
         </>
       )}
     </Stack.Navigator>

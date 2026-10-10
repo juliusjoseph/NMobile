@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "FitBuddy",
-    "slug": "FitBuddy",
+    "name": "NMobile",
+    "slug": "NMobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/mob.png",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/kkk.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
