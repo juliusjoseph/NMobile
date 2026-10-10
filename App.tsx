@@ -1,20 +1,31 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from "react";
+import { StatusBar } from "expo-status-bar";
+import { NavigationContainer, DarkTheme, DefaultTheme } from "@react-navigation/native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { ThemeProvider, useTheme } from "./src/theme";
+import { StoreProvider } from "./src/store";
+import RootNavigator from "./src/navigation";
 
-export default function App() {
+function Shell() {
+  const { c, isDark } = useTheme();
+  const base = isDark ? DarkTheme : DefaultTheme;
+  const theme = { ...base, colors: { ...base.colors, background: c.bg, card: c.surface, text: c.text, border: c.line, primary: c.primary } };
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer theme={theme}>
+      <StatusBar style={isDark ? "light" : "dark"} />
+      <RootNavigator />
+    </NavigationContainer>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <StoreProvider>
+          <Shell />
+        </StoreProvider>
+      </ThemeProvider>
+    </SafeAreaProvider>
+  );
+}
